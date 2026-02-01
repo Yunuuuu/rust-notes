@@ -162,37 +162,6 @@ operator is also a unary prefix operator.
   variable, a (nested) field of a local variable or is a mutable place
   expression, then the resulting memory location can be assigned to.
 
-## Dot Operator
-The [dot operator](<https://doc.rust-lang.org/nomicon/dot-operator.html>) will
-perform a lot of magic to convert types. It will perform auto-referencing,
-auto-dereferencing, and coercion until types match. The detailed mechanics of
-method lookup are defined
-[here](https://rustc-dev-guide.rust-lang.org/hir-typeck/method-lookup.html#method-lookup),
-but here is a brief overview that outlines the main steps.
-
-Suppose we have a function `foo` that has a receiver (a `self`, `&self` or `&mut
-self` parameter). If we call `value.foo()`, the compiler needs to determine what
-type `Self` is before it can call the correct implementation of the function.
-For this example, we will say that `value` has type `T`.
-
-We will use `fully-qualified syntax` to be more clear about exactly which type
-we are calling a function on.
-
-- First, the compiler checks if it can call `T::foo(value)` directly. This is
-  called a "by value" method call.
-- If it can't call this function (for example, if the function has the wrong
-  type or a trait isn't implemented for `Self`), then the compiler tries to add
-  in an automatic reference. This means that the compiler tries
-  `<&T>::foo(value)` and `<&mut T>::foo(value)`. This is called an "autoref"
-  method call.
-- If none of these candidates worked, it dereferences `T` and tries again. This
-  uses the `Deref` trait - if `T: Deref<Target = U>` then it tries again with
-  type `U` instead of `T`. If it can't dereference `T`, it can also try
-  _unsizing_ `T`. This just means that if `T` has a size parameter known at
-  compile time, it "forgets" it for the purpose of resolving methods. For
-  instance, this unsizing step can convert `[i32; 2]` into `[i32]` by
-  "forgetting" the size of the array.
-
 ## Reference
 
 References come in two kinds:
