@@ -36,11 +36,6 @@ we are calling a function on.
      this selection, updating the side-tables, unifying type variables, and
      otherwise doing side-effectful things.
 
-[dot operator]: https://doc.rust-lang.org/nomicon/dot-operator.html
-[method lookup]: https://rustc-dev-guide.rust-lang.org/hir-typeck/method-lookup.html#method-lookup
-[probe]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_typeck/method/probe/
-[confirm]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_typeck/method/confirm/
-
 One way to think of method lookup is that we convert an expression of
 the form `receiver.method(...)` into a more explicit [fully-qualified syntax][]
 (formerly called [UFCS][]):
@@ -115,14 +110,24 @@ might have two candidates:
 
 ### Candidate search
 
-Finally, to actually pick the method, we will search down the steps,
-trying to match the receiver type against the candidate types. At
-each step, we also consider an auto-ref and auto-mut-ref to see whether
-that makes any of the candidates match. For each resulting receiver
-type, we consider inherent candidates before extension candidates.
-If there are multiple matching candidates in a group, we report an
-error, except that multiple impls of the same trait are treated as a
-single match. Otherwise we pick the first match we find.
+Finally, to actually pick the method, we will search down the steps, trying to
+match the **receiver type** against the **candidate types**. At each step, we
+also consider an **auto-ref** and **auto-mut-ref** to see whether that makes any
+of the candidates match. 
+
+For each receiver `T`, we'll add `&T` and `&mut T` to the list immediately after
+`T` (Please see [here][method-call-expr]).
+
+For instance, if the receiver has type `Box<[i32;2]>`, then the receiver types
+searched will be `Box<[i32;2]>`, `&Box<[i32;2]>`, `&mut Box<[i32;2]>`, `[i32;
+2]` (by dereferencing), `&[i32; 2]`, `&mut [i32; 2]`, `[i32]` (by unsized
+coercion), `&[i32]`, and finally `&mut [i32]`.
+
+For each resulting receiver type, we
+consider inherent candidates before extension candidates. If there are multiple
+matching candidates in a group, we report an error, except that multiple impls
+of the same trait are treated as a single match. Otherwise we pick the first
+match we find.
 
 In the case of our example, the first step is `Rc<Box<[T; 3]>>`,
 which does not itself match any candidate. But when we autoref it, we
@@ -131,3 +136,9 @@ recursively consider all where-clauses that appear on the impl: if
 those match (or we cannot rule out that they do), then this is the
 method we would pick. Otherwise, we would continue down the series of
 steps.
+
+[dot operator]: https://doc.rust-lang.org/nomicon/dot-operator.html
+[method lookup]: https://rustc-dev-guide.rust-lang.org/hir-typeck/method-lookup.html#method-lookup
+[probe]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_typeck/method/probe/
+[confirm]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_typeck/method/confirm/
+[method-call-expr]: https://doc.rust-lang.org/reference/expressions/method-call-expr.html
