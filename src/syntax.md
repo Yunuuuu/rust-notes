@@ -167,7 +167,7 @@ The [dot operator](<https://doc.rust-lang.org/nomicon/dot-operator.html>) will
 perform a lot of magic to convert types. It will perform auto-referencing,
 auto-dereferencing, and coercion until types match. The detailed mechanics of
 method lookup are defined
-[here][https://rustc-dev-guide.rust-lang.org/hir-typeck/method-lookup.html#method-lookup],
+[here](https://rustc-dev-guide.rust-lang.org/hir-typeck/method-lookup.html#method-lookup),
 but here is a brief overview that outlines the main steps.
 
 Suppose we have a function `foo` that has a receiver (a `self`, `&self` or `&mut
