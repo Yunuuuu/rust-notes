@@ -117,9 +117,9 @@ impl Drop for PrintOnDrop {
 let moved;
 // No destructor run on assignment.
 moved = PrintOnDrop("Drops when moved");
-println!("Before");
+println!("Before expression statement");
 moved; // Drops now
-println!("After");
+println!("After expression statement");
 ```
 
 ## Expressions
