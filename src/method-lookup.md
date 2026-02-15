@@ -1,6 +1,6 @@
 # Method lookup
 
-The [dot operator][dot operator] will perform a lot of magic to convert types.
+The [dot operator] will perform a lot of magic to convert types.
 It will perform auto-referencing, auto-dereferencing, and coercion until types
 match. The detailed mechanics of method lookup are defined [here][method
 lookup], but here is a brief overview that outlines the main steps.
@@ -28,7 +28,7 @@ we are calling a function on.
   instance, this unsizing step can convert `[i32; 2]` into `[i32]` by
   "forgetting" the size of the array.
 
-[Method lookup][method lookup] is divided into two major phases:
+[Method lookup] is divided into two major phases:
 
   1. Probing ([`probe.rs`][probe]). The probe phase is when we decide what
      method to call and how to adjust the receiver.
@@ -37,8 +37,7 @@ we are calling a function on.
      otherwise doing side-effectful things.
 
 One way to think of method lookup is that we convert an expression of
-the form `receiver.method(...)` into a more explicit [fully-qualified syntax][]
-(formerly called [UFCS][]):
+the form `receiver.method(...)` into a more explicit [fully-qualified syntax]:
 
 - `Trait::method(ADJ(receiver), ...)` for a trait call
 - `ReceiverType::method(ADJ(receiver), ...)` for an inherent method call
@@ -142,3 +141,4 @@ steps.
 [probe]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_typeck/method/probe/
 [confirm]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_typeck/method/confirm/
 [method-call-expr]: https://doc.rust-lang.org/reference/expressions/method-call-expr.html
+[fully-qualified syntax]: https://doc.rust-lang.org/nightly/book/ch20-02-advanced-traits.html#fully-qualified-syntax-for-disambiguation-calling-methods-with-the-same-name
