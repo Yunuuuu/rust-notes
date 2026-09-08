@@ -1,4 +1,6 @@
 [book]
-authors = ["Yunuuuu"]
+title = "Rust Notes"
+description = "Notes on Rust language semantics and API design"
+authors = ["Yun Peng", "pengyun.me@outlook.com"]
 language = "en"
 src = "src"
