@@ -10,3 +10,4 @@
 - [`into_parts()` and ownership transfer](./into_parts.md)
 - [Context should follow meaning, not usage](./context-ownership.md)
 - [Do not confuse input boundaries with domain meaning](./io-boundaries.md)
+- [Where Should Object Coordination Logic Live?](./object-coordination.md)
