@@ -20,8 +20,9 @@ the expected direction of change**.
 Responsibility-Driven Design treats an application as a community of objects whose responsibilities
 include actions they perform, knowledge they maintain, and important decisions they make. Objects
 collaborate because larger responsibilities usually cannot be fulfilled by one object alone.
-Wirfs-Brock and McKean explicitly recognize coordinators as legitimate object roles: a coordinator
-can react to events primarily by delegating tasks to other objects. [1]
+[Wirfs-Brock][object-design] and [McKean][object-design] explicitly recognize coordinators as
+legitimate object roles: a coordinator can react to events primarily by delegating tasks to other
+objects. [1]
 
 A useful starting principle is therefore:
 
@@ -66,11 +67,11 @@ order.cancel()?;
 Now the caller knows the capability—_cancel this order_—without knowing the internal procedure
 required to fulfill it.
 
-This is closely related to the object-design principle behind Tell, Don't Ask: behavior that
+This is closely related to the object-design principle behind _Tell, Don't Ask_: behavior that
 operates on an object's state often belongs with that state rather than in clients that retrieve
-information and reconstruct the behavior themselves. Fowler presents Tell, Don't Ask as a useful
-reminder to colocate tightly coupled data and behavior, while explicitly warning against turning it
-into a prohibition on query methods. [4]
+information and reconstruct the behavior themselves. [Fowler][tell-dont-ask] presents _Tell, Don't
+Ask_ as a useful reminder to colocate tightly coupled data and behavior, while explicitly warning
+against turning it into a prohibition on query methods. [4]
 
 The important distinction is therefore not:
 
@@ -146,10 +147,10 @@ fn process(&self, line: &str) -> Result<()> {
 Here `RecordProcessor` is not stealing parsing responsibility from `Parser` or filtering
 responsibility from `Filter`. Its responsibility is the higher-level coordination itself.
 
-This fits Responsibility-Driven Design particularly well. Wirfs-Brock and McKean define
-collaboration as one object requesting help from another so that the objects can jointly fulfill
-larger responsibilities, and they explicitly identify **Coordinator** as a legitimate object-role
-stereotype. [1]
+This fits Responsibility-Driven Design particularly well. [Wirfs-Brock][object-design] and
+[McKean][object-design] define collaboration as one object requesting help from another so that the
+objects can jointly fulfill larger responsibilities, and they explicitly identify **Coordinator** as
+a legitimate object-role stereotype. [1]
 
 Thus:
 
@@ -283,57 +284,12 @@ the neighborhood of collaborating objects. [1]
 
 ---
 
-## 5. Do not confuse encapsulation with eliminating all preconditions
-
-There is an important qualification to the previous discussion.
-
-It would be too strong to claim:
-
-> "Every condition needed before calling a method must always be checked internally by that object."
-
-General object design allows collaborators to have explicit contracts. Wirfs-Brock and McKean
-describe **conditions-of-use**—conditions a client is obligated to satisfy—and **aftereffect
-guarantees**—what the service provider promises after the operation succeeds. A method may therefore
-legitimately have preconditions that its caller is expected to respect. [1]
-
-For example, an API could conceptually specify:
-
-```text
-Precondition:
-    transaction has already been opened
-
-Operation:
-    append entry
-
-Postcondition:
-    entry has been added to the current transaction
-```
-
-The existence of that precondition is not automatically a leak.
-
-However, DDD adds another concern when an object is an **Aggregate consistency boundary**. Vernon
-emphasizes that true invariants belonging inside an Aggregate's consistency boundary must remain
-valid through changes to that Aggregate. [5]
-
-Therefore two ideas need to be kept separate:
-
-1. **General object contracts may legitimately impose preconditions on callers.**
-2. **A domain object's public mutation API should not allow callers to violate invariants that the
-   object or Aggregate is responsible for maintaining.**
-
-How that protection is implemented is an engineering choice. It might involve validation inside a
-command method, a type-level representation that makes invalid calls impossible, construction
-constraints, or another mechanism. It does not necessarily require duplicating every `can_*` query
-inside every command as a literal runtime `if`.
-
----
-
-# How to Review Coordination Logic
+## How to Review Coordination Logic
 
 When deciding whether logic belongs inside an object or in its caller, the following questions are
 more useful than rules such as "avoid `if`" or "hide all method sequences."
 
-## 1. Whose responsibility is being fulfilled?
+### 1. Whose responsibility is being fulfilled?
 
 Start by describing the code in domain or design language rather than in terms of methods.
 
@@ -369,7 +325,7 @@ collaborator's abstraction.
 
 ---
 
-## 2. Does the caller know implementation details?
+### 2. Does the caller know implementation details?
 
 Ask:
 
@@ -397,7 +353,7 @@ internal procedure that callers have to reconstruct.
 
 ---
 
-## 3. Would moving the logic inward broaden the object's role?
+### 3. Would moving the logic inward broaden the object's role?
 
 Now reverse the question:
 
@@ -422,7 +378,7 @@ It is the object whose role makes the responsibility coherent.
 
 ---
 
-## 4. Which placement keeps expected changes within the right boundary?
+### 4. Which placement keeps expected changes within the right boundary?
 
 This is one of the most useful practical tests.
 
@@ -441,7 +397,7 @@ if filter.accepts(&record) {
 
 We can simulate several expected changes.
 
-### Parsing format changes
+#### Parsing format changes
 
 Suppose:
 
@@ -471,7 +427,7 @@ quoting, or field extraction.
 If changing the input representation requires modifying every caller of `Parser`, parsing details
 have probably leaked outside the parser abstraction.
 
-### Filtering policy changes
+#### Filtering policy changes
 
 Suppose the original rule is:
 
@@ -506,7 +462,7 @@ if record.score() >= 80 && !record.is_excluded() {
 
 then the filtering policy has escaped its intended boundary.
 
-### Processing workflow changes
+#### Processing workflow changes
 
 Suppose the original flow is:
 
@@ -598,11 +554,11 @@ In other words:
 > merely to reduce the number of modified files.**
 
 This reasoning is consistent with _Object Design_. In Chapter 4, when discussing difficulty
-assigning a responsibility, Wirfs-Brock and McKean recommend trying an assignment and then examining
-what that choice implies for surrounding objects. Their concrete example asks whether a `Session`
-should time itself or whether `SessionManager` should do so. Both alternatives can be made workable;
-the proposed way forward is to examine how each responsibility distribution affects neighboring
-objects. The example appears on p. 139. [1]
+assigning a responsibility, [Wirfs-Brock][object-design] and [McKean][object-design] recommend
+trying an assignment and then examining what that choice implies for surrounding objects. Their
+concrete example asks whether a `Session` should time itself or whether `SessionManager` should do
+so. Both alternatives can be made workable; the proposed way forward is to examine how each
+responsibility distribution affects neighboring objects. The example appears on p. 139. [1]
 
 That example is important because it rejects a simplistic view of responsibility assignment:
 
@@ -631,7 +587,7 @@ quotation or named rule from the book.
 
 ---
 
-## 5. Who makes the business decision?
+### 5. Who makes the business decision?
 
 For application services in particular, one additional question matters:
 
@@ -641,10 +597,11 @@ For application services in particular, one additional question matters:
 This is the key to understanding why an `if` in an application service is not automatically a
 problem.
 
-Evans describes the Application Layer as defining the jobs the software performs and coordinating
-domain objects, while keeping business rules and business knowledge in the Domain Layer. [2] Fowler
-and Stafford similarly distinguish **application logic**, which coordinates an application's
-response to a use case, from **domain logic**, which expresses rules of the problem domain. [3]
+[Evans][domain-driven-design] describes the Application Layer as defining the jobs the software
+performs and coordinating domain objects, while keeping business rules and business knowledge in the
+Domain Layer. [2] [Fowler][service-layer] and [Stafford][service-layer] similarly distinguish
+**application logic**, which coordinates an application's response to a use case, from **domain
+logic**, which expresses rules of the problem domain. [3]
 
 The important word is **coordinates**.
 
@@ -652,12 +609,12 @@ Coordination naturally contains control flow.
 
 ---
 
-# `if` Statements in Application Services
+## `if` Statements in Application Services
 
-## 1. An `if` can merely react to a domain decision
+### 1. An `if` can merely react to a domain decision
 
-Vladimir Khorikov gives a particularly clear example in _Domain services vs Application services_.
-Consider the equivalent Rust-style code:
+[Vladimir Khorikov][domain-vs-application-services] gives a particularly clear example in _Domain
+services vs Application services_. Consider the equivalent Rust-style code:
 
 ```rust
 if !atm.can_dispense_money(amount) {
@@ -669,9 +626,10 @@ atm.dispense_money(amount)?;
 
 The application service contains an `if`.
 
-Nevertheless, according to Khorikov's analysis, the application service is not making the withdrawal
-decision. `Atm` determines whether money can be dispensed; the application service merely decides
-whether to continue the use-case flow after receiving that answer. [6]
+Nevertheless, according to [Khorikov][domain-vs-application-services]'s analysis, the application
+service is not making the withdrawal decision. `Atm` determines whether money can be dispensed; the
+application service merely decides whether to continue the use-case flow after receiving that
+answer. [6]
 
 Semantically:
 
@@ -687,19 +645,21 @@ The first statement is domain knowledge.
 
 The second is orchestration.
 
-Khorikov additionally requires `DispenseMoney` itself to preserve the ATM invariant rather than
-relying on the outer `CanDispenseMoney` check as its only protection. [6]
+[Khorikov][domain-vs-application-services] additionally requires `DispenseMoney` itself to preserve
+the ATM invariant rather than relying on the outer `CanDispenseMoney` check as its only protection.
+[6]
 
 That latter recommendation fits a DDD-style Aggregate when the condition is truly an invariant
 within its consistency boundary, but it should not be generalized into "every public method must
-recheck every caller precondition." As discussed earlier, general object contracts can legitimately
-assign preconditions to clients. [1][5]
+recheck every caller precondition." As discussed in
+[the chapter on object state constraints](./encapsulation-and-preconditions.md), general object
+contracts can legitimately assign preconditions to clients. [1][5]
 
 ---
 
-## 2. Another `if` can encode a domain rule
+### 2. Another `if` can encode a domain rule
 
-Khorikov then changes the scenario.
+[Khorikov][domain-vs-application-services] then changes the scenario.
 
 Suppose charging the customer can fail:
 
@@ -734,24 +694,25 @@ cash must not be dispensed
 
 That relationship is itself part of the business decision.
 
-Khorikov therefore classifies this branch as domain logic: unlike the first `if`, the decision is no
-longer being made by `Atm`; the application service itself determines the business consequence of
-the payment result. [6]
+[Khorikov][domain-vs-application-services] therefore classifies this branch as domain logic: unlike
+the first `if`, the decision is no longer being made by `Atm`; the application service itself
+determines the business consequence of the payment result. [6]
 
 This example gives a much better test than cyclomatic complexity:
 
 > **The existence of a branch does not identify domain logic. The semantic decision expressed by the
 > branch does.**
 
-Khorikov's proposed solution in this particular scenario is a Domain Service that participates in
-the payment-dependent decision. He calls a Domain Service that depends on an external gateway an
-**"impure domain service."** That terminology and recommendation are Khorikov's own formulation;
-"impure domain service" is not a canonical Evans DDD term. [6]
+[Khorikov][domain-vs-application-services]'s proposed solution in this particular scenario is a
+Domain Service that participates in the payment-dependent decision. He calls a Domain Service that
+depends on an external gateway an **"impure domain service."** That terminology and recommendation
+are [Khorikov][domain-vs-application-services]'s own formulation; "impure domain service" is not a
+canonical [Evans][domain-driven-design] DDD term. [6]
 
 The broader, well-supported DDD principle is that a Domain Service is appropriate when an important
-domain operation does not naturally belong to an Entity or Value Object. Evans describes such
-services as domain operations expressed in terms of the domain model, and Vernon gives the same
-general guidance. [2][5]
+domain operation does not naturally belong to an Entity or Value Object.
+[Evans][domain-driven-design] describes such services as domain operations expressed in terms of the
+domain model, and [Vernon][implementing-ddd] gives the same general guidance. [2][5]
 
 Exactly how a business decision that depends on external information should be modeled can depend on
 consistency requirements, transaction boundaries, integration design, and the domain itself. A
@@ -759,7 +720,7 @@ Domain Service is one option, not an automatic consequence of seeing an external
 
 ---
 
-# Domain methods alone do not prove that no rule has leaked
+## Domain methods alone do not prove that no rule has leaked
 
 Consider:
 
@@ -834,11 +795,11 @@ Therefore:
 The semantic contract matters.
 
 This condition-to-consequence analysis is a derived design heuristic from the preceding principles;
-it is not a named Evans or Wirfs-Brock rule.
+it is not a named [Evans][domain-driven-design] or [Wirfs-Brock][object-design] rule.
 
 ---
 
-# Domain logic can hide in combinations of domain predicates
+## Domain logic can hide in combinations of domain predicates
 
 Consider:
 
@@ -893,7 +854,7 @@ Ask:
 
 ---
 
-# Domain logic can also hide in call ordering
+## Domain logic can also hide in call ordering
 
 The same issue exists without any `if`.
 
@@ -931,11 +892,11 @@ That is why the meaning of the sequence must be examined rather than the syntax.
 
 ---
 
-# Facts, decisions, and orchestration
+## Facts, decisions, and orchestration
 
 A useful mental model is to separate three things.
 
-### Domain facts
+#### Domain facts
 
 Examples:
 
@@ -946,7 +907,7 @@ Payment failed.
 Inventory contains four units.
 ```
 
-### Domain decisions
+#### Domain decisions
 
 Examples:
 
@@ -957,7 +918,7 @@ This withdrawal is permitted.
 This shipment requires manual approval.
 ```
 
-### Application orchestration
+#### Application orchestration
 
 Examples:
 
@@ -970,10 +931,10 @@ Publish an integration message.
 Translate a domain failure into a use-case result.
 ```
 
-Evans's distinction between Application and Domain Layers, and Fowler/Stafford's distinction between
-application logic and domain logic, support this separation conceptually, although the exact
-three-part classification above is a practical synthesis rather than terminology defined by those
-authors. [2][3]
+[Evans][domain-driven-design]'s distinction between Application and Domain Layers, and
+[Fowler][service-layer]/[Stafford][service-layer]'s distinction between application logic and domain
+logic, support this separation conceptually, although the exact three-part classification above is a
+practical synthesis rather than terminology defined by those authors. [2][3]
 
 A common leakage pattern is:
 
@@ -1009,7 +970,7 @@ object's responsibility.
 
 ---
 
-# Application services are allowed to coordinate multiple domain calls
+## Application services are allowed to coordinate multiple domain calls
 
 Another common overcorrection is to assume:
 
@@ -1018,14 +979,14 @@ Another common overcorrection is to assume:
 
 That is not supported by classical DDD.
 
-Evans's Application Layer explicitly coordinates domain objects. Fowler and Stafford's Service Layer
-likewise coordinates an application's response to a use case while delegating domain logic to the
-Domain Model. [2][3]
+[Evans][domain-driven-design]'s Application Layer explicitly coordinates domain objects.
+[Fowler][service-layer] and [Stafford][service-layer]'s Service Layer likewise coordinates an
+application's response to a use case while delegating domain logic to the Domain Model. [2][3]
 
-Khorikov makes the same point with his ATM example: merely knowing that two domain operations must
-be invoked does not by itself constitute domain knowledge. His additional heuristic is that if
-changing the ordering does not affect domain invariants, that is evidence that the sequence is
-orchestration rather than an exposed domain rule. [6]
+[Khorikov][domain-vs-application-services] makes the same point with his ATM example: merely knowing
+that two domain operations must be invoked does not by itself constitute domain knowledge. His
+additional heuristic is that if changing the ordering does not affect domain invariants, that is
+evidence that the sequence is orchestration rather than an exposed domain rule. [6]
 
 For example:
 
@@ -1047,7 +1008,7 @@ The question remains:
 
 ---
 
-# A coordinator should not automatically become a Domain Service
+## A coordinator should not automatically become a Domain Service
 
 A useful distinction is:
 
@@ -1059,10 +1020,11 @@ domain service
 
 Responsibility-Driven Design recognizes **Coordinator** as a general object role. [1]
 
-DDD's **Domain Service** is more specific. Evans introduces a Domain Service for an operation that
-is an important domain concept but does not naturally belong to an Entity or Value Object. [2]
-Vernon repeats essentially the same criterion: a Domain Service is appropriate when a
-domain-specific operation feels misplaced on an Aggregate or Value Object. [5]
+DDD's **Domain Service** is more specific. [Evans][domain-driven-design] introduces a Domain Service
+for an operation that is an important domain concept but does not naturally belong to an Entity or
+Value Object. [2] [Vernon][implementing-ddd] repeats essentially the same criterion: a Domain
+Service is appropriate when a domain-specific operation feels misplaced on an Aggregate or Value
+Object. [5]
 
 Therefore an object such as:
 
@@ -1098,15 +1060,15 @@ Its responsibility does.
 
 ---
 
-# Tell, Don't Ask is a heuristic, not a ban on queries
+## _Tell, Don't Ask_ is a heuristic, not a ban on queries
 
 The discussion above can easily be distorted into:
 
 > "Never ask an object for information. Always tell it to do everything."
 
-Fowler explicitly rejects that extreme interpretation. He notes that objects can collaborate
-effectively by providing information and that eliminating reasonable query methods can produce
-unnecessarily convoluted designs. He treats Tell, Don't Ask mainly as a prompt to consider
+[Fowler][tell-dont-ask] explicitly rejects that extreme interpretation. He notes that objects can
+collaborate effectively by providing information and that eliminating reasonable query methods can
+produce unnecessarily convoluted designs. He treats _Tell, Don't Ask_ mainly as a prompt to consider
 colocating behavior with the data it depends on, not as an absolute law. [4]
 
 Therefore this is not inherently wrong:
@@ -1125,18 +1087,18 @@ or whether it is reconstructing additional domain policy from it.
 
 ---
 
-# When these guidelines should not be applied mechanically
+## When these guidelines should not be applied mechanically
 
 These ideas are most useful when there is meaningful domain behavior to model.
 
 They should not be used to force every program into a rich object model.
 
-Khorikov explicitly notes that simple CRUD applications may contain no substantive domain
-decision-making at all, in which case application services can perform the workflow directly and a
-rich domain model may provide little benefit. [6]
+[Khorikov][domain-vs-application-services] explicitly notes that simple CRUD applications may
+contain no substantive domain decision-making at all, in which case application services can perform
+the workflow directly and a rich domain model may provide little benefit. [6]
 
-Likewise, Fowler's Domain Model is one architecture pattern among others; he does not claim it is
-always superior to Transaction Script. [3][4]
+Likewise, [Fowler][service-layer]'s Domain Model is one architecture pattern among others; he does
+not claim it is always superior to Transaction Script. [3][4]
 
 Other cases where a more direct design may be preferable include:
 
@@ -1151,11 +1113,11 @@ object-oriented vocabulary may not be the best representation.
 
 ---
 
-# A Practical Review Procedure
+## A Practical Review Procedure
 
 When a piece of coordination logic feels questionable, review it in this order.
 
-### Step 1: State the responsibility in plain language
+#### Step 1: State the responsibility in plain language
 
 Do not start with:
 
@@ -1177,7 +1139,7 @@ Then ask whether there is also a meaningful larger responsibility:
 Process one input line.
 ```
 
-### Step 2: Identify who owns each decision
+#### Step 2: Identify who owns each decision
 
 Ask:
 
@@ -1193,7 +1155,7 @@ Who decides what happens after rejection?
 
 Do not assume that all of these belong to the same object.
 
-### Step 3: Check knowledge leaking outward
+#### Step 3: Check knowledge leaking outward
 
 Ask:
 
@@ -1202,7 +1164,7 @@ Ask:
 If clients repeatedly know internal state, internal transitions, or internal implementation
 sequences, the collaborator may not own its responsibility completely.
 
-### Step 4: Check knowledge leaking inward
+#### Step 4: Check knowledge leaking inward
 
 Ask:
 
@@ -1212,7 +1174,7 @@ Ask:
 If `Parser` suddenly needs knowledge of databases, retry policy, notifications, and batch workflows,
 moving the code inward is probably making the abstraction worse.
 
-### Step 5: Simulate likely changes
+#### Step 5: Simulate likely changes
 
 Ask:
 
@@ -1230,7 +1192,7 @@ Do not merely count modified classes.
 
 Ask whether the modified classes are the ones responsible for the changed concept.
 
-### Step 6: For an application-service branch, translate the whole branch into business language
+#### Step 6: For an application-service branch, translate the whole branch into business language
 
 For:
 
@@ -1260,7 +1222,7 @@ write:
 
 That looks much more like orchestration.
 
-### Step 7: Check invariants separately from orchestration
+#### Step 7: Check invariants separately from orchestration
 
 Finally ask:
 
@@ -1282,7 +1244,7 @@ Invariant protection and policy placement are related but distinct questions.
 
 ---
 
-# Final Principle
+## Final Principle
 
 The most useful question is not:
 
@@ -1348,41 +1310,51 @@ structure.
 
 The design question lies in the meaning behind them.
 
-## References
+### References
 
-[1] Rebecca Wirfs-Brock and Alan McKean, _Object Design: Roles, Responsibilities, and
-Collaborations_. Addison-Wesley Professional, 2003. Particularly relevant are Chapter 1, “Design
-Concepts”; Chapter 4, “Responsibilities”; Chapter 5, “Collaborations”; and Chapter 6, “Control
-Style.” The `Session` versus `SessionManager` responsibility-assignment example is in Chapter 4,
-p. 139.
+[1] [Rebecca Wirfs-Brock][object-design] and [Alan McKean][object-design], _Object Design: Roles,
+Responsibilities, and Collaborations_. Addison-Wesley Professional, 2003. Particularly relevant are
+Chapter 1, “Design Concepts”; Chapter 4, “Responsibilities”; Chapter 5, “Collaborations”; and
+Chapter 6, “Control Style.” The `Session` versus `SessionManager` responsibility-assignment example
+is in Chapter 4, p. 139.
 [Publisher page](https://www.informit.com/store/object-design-roles-responsibilities-and-collaborations-9780201379433?utm_source=chatgpt.com)
 
-[2] Eric Evans, _Domain-Driven Design: Tackling Complexity in the Heart of Software_. Addison-Wesley
-Professional, 2003. See Chapter 4, “Isolating the Domain,” for the Application/Domain/Infrastructure
-layer distinction, and Chapter 5, “A Model Expressed in Software,” for Services.
+[2] [Eric Evans][domain-driven-design], _Domain-Driven Design: Tackling Complexity in the Heart of
+Software_. Addison-Wesley Professional, 2003. See Chapter 4, “Isolating the Domain,” for the
+Application/Domain/Infrastructure layer distinction, and Chapter 5, “A Model Expressed in Software,”
+for Services.
 [Book page and table of contents](https://www.oreilly.com/library/view/domain-driven-design-tackling/0321125215/?utm_source=chatgpt.com)
 
-[3] Martin Fowler with Randy Stafford, _Patterns of Enterprise Application Architecture_.
-Addison-Wesley, 2002, Chapter 9, “Domain Logic Patterns,” Service Layer. The Service Layer material
-distinguishes domain logic from application/workflow logic and describes application services as
-coordinating use-case responses while delegating domain logic to the Domain Model.
+[3] [Martin Fowler][service-layer] with [Randy Stafford][service-layer], _Patterns of Enterprise
+Application Architecture_. Addison-Wesley, 2002, Chapter 9, “Domain Logic Patterns,” Service Layer.
+The Service Layer material distinguishes domain logic from application/workflow logic and describes
+application services as coordinating use-case responses while delegating domain logic to the Domain
+Model.
 [Service Layer excerpt](https://www.martinfowler.com/eaaCatalog/serviceLayer.html?utm_source=chatgpt.com)
 
-[4] Martin Fowler, “Tell Don’t Ask,” 2013. Fowler explains the value of colocating behavior with
-data while explicitly warning against treating Tell, Don’t Ask as a rule forbidding query methods;
-he also notes that layering and other concerns can outweigh strict colocation.
-[Article](https://martinfowler.com/bliki/TellDontAsk.html?utm_source=chatgpt.com)
+[4] [Martin Fowler][tell-dont-ask], “_Tell Don’t Ask_,” 2013. [Fowler][tell-dont-ask] explains the
+value of colocating behavior with data while explicitly warning against treating _Tell, Don’t Ask_
+as a rule forbidding query methods; he also notes that layering and other concerns can outweigh
+strict colocation. [Article](https://martinfowler.com/bliki/TellDontAsk.html?utm_source=chatgpt.com)
 
-[5] Vaughn Vernon, _Implementing Domain-Driven Design_. Addison-Wesley Professional, 2013. See
-Chapter 7, “Services”; Chapter 10, “Aggregates”; and Chapter 14, “Application.” Vernon describes
-Domain Services as domain-specific operations that do not naturally fit an Aggregate or Value
-Object, Aggregates as consistency boundaries for true invariants, and Application Services as
-coordinators of use-case tasks.
+[5] [Vaughn Vernon][implementing-ddd], _Implementing Domain-Driven Design_. Addison-Wesley
+Professional, 2013. See Chapter 7, “Services”; Chapter 10, “Aggregates”; and Chapter 14,
+“Application.” [Vernon][implementing-ddd] describes Domain Services as domain-specific operations
+that do not naturally fit an Aggregate or Value Object, Aggregates as consistency boundaries for
+true invariants, and Application Services as coordinators of use-case tasks.
 [Book page](https://www.informit.com/store/implementing-domain-driven-design-9780133039900?utm_source=chatgpt.com)
 
-[6] Vladimir Khorikov, “Domain services vs Application services,” _Enterprise Craftsmanship_,
-September 8, 2016. This article provides the ATM examples distinguishing an application-service `if`
-that reacts to an `Atm` decision from an `if` that makes a business decision based on payment
-failure. Its “impure domain service” terminology and the recommendation for that specific
-external-dependency scenario are Khorikov's formulation rather than terminology defined by Evans.
+[6] [Vladimir Khorikov][domain-vs-application-services], “Domain services vs Application services,”
+_Enterprise Craftsmanship_, September 8, 2016. This article provides the ATM examples distinguishing
+an application-service `if` that reacts to an `Atm` decision from an `if` that makes a business
+decision based on payment failure. Its “impure domain service” terminology and the recommendation
+for that specific external-dependency scenario are [Khorikov][domain-vs-application-services]'s
+formulation rather than terminology defined by [Evans][domain-driven-design].
 [Article](https://enterprisecraftsmanship.com/posts/domain-vs-application-services/?utm_source=chatgpt.com)
+
+[object-design]: https://www.informit.com/store/object-design-roles-responsibilities-and-collaborations-9780201379433?utm_source=chatgpt.com
+[domain-driven-design]: https://www.oreilly.com/library/view/domain-driven-design-tackling/0321125215/?utm_source=chatgpt.com
+[service-layer]: https://www.martinfowler.com/eaaCatalog/serviceLayer.html?utm_source=chatgpt.com
+[tell-dont-ask]: https://martinfowler.com/bliki/TellDontAsk.html?utm_source=chatgpt.com
+[implementing-ddd]: https://www.informit.com/store/implementing-domain-driven-design-9780133039900?utm_source=chatgpt.com
+[domain-vs-application-services]: https://enterprisecraftsmanship.com/posts/domain-vs-application-services/?utm_source=chatgpt.com
