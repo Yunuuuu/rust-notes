@@ -1,0 +1,52 @@
+# Based on the mdBook wiki's "Using deploy via actions" example:
+# https://github.com/rust-lang/mdBook/wiki/Automated-Deployment:-GitHub-Actions#using-deploy-via-actions
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install latest mdbook
+        shell: bash
+        run: |
+          mdbook_tag=$(curl --fail --silent --show-error --location \
+            https://api.github.com/repos/rust-lang/mdbook/releases/latest | jq --exit-status --raw-output '.tag_name')
+          mdbook_url="https://github.com/rust-lang/mdbook/releases/download/${mdbook_tag}/mdbook-${mdbook_tag}-x86_64-unknown-linux-gnu.tar.gz"
+          mkdir mdbook
+          curl --fail --silent --show-error --location "$mdbook_url" | tar -xz --directory=mdbook
+          echo "$PWD/mdbook" >> "$GITHUB_PATH"
+
+      - name: Build Book
+        run: mdbook build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: book
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
