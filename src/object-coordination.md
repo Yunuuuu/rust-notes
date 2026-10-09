@@ -649,11 +649,11 @@ The second is orchestration.
 the ATM invariant rather than relying on the outer `CanDispenseMoney` check as its only protection.
 [6]
 
-That latter recommendation fits a DDD-style Aggregate when the condition is truly an invariant
-within its consistency boundary, but it should not be generalized into "every public method must
-recheck every caller precondition." As discussed in
-[the chapter on object state constraints](./encapsulation-and-preconditions.md), general object
-contracts can legitimately assign preconditions to clients. [1][5]
+The caller's `if` responds to a decision made by the domain object; the command still protects the
+object's state if that query is skipped. For a rule the object promises to maintain, callers must
+not become its only enforcement point. See
+[Methods Must Preserve Object State Constraints](./methods-protect-object-state.md) for account and
+order examples.
 
 ---
 
