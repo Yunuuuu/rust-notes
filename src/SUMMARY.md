@@ -3,6 +3,7 @@
 # Language fundamentals
 
 - [Syntax](./syntax.md)
+- [`&mut T` Allows Mutation of Its Referent](./mut-and-referents.md)
 - [Method lookup](./method-lookup.md)
 
 # API design
