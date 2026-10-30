@@ -14,3 +14,4 @@
 - [Do not confuse input boundaries with domain meaning](./io-boundaries.md)
 - [Where Should Object Coordination Logic Live?](./object-coordination.md)
 - [Methods Must Preserve Object State Constraints](./methods-protect-object-state.md)
+- [Safe APIs Must Not Turn Caller Logic Errors into Undefined Behavior](./safe-api-soundness.md)
